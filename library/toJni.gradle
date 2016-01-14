@@ -1,0 +1,41 @@
+
+boolean isJniDir(File file){
+    return file.isDirectory() && file.getName().equals("jni")
+}
+
+File findJniDir(File file){
+    if(file.isDirectory()){
+        String[] ss = file.list()
+        if (ss == null) return null;
+        for (String s : ss){
+            File childFile = new File(s,file);
+            if(isJniDir(childFile)){
+                return childFile
+            }else if(childFile.isDirectory()){
+                file = findJniDir(childFile)
+            }
+        }
+    }
+
+    return file
+}
+
+task filelisttask << {
+    description "filelisttask"
+    File file = findJniDir(project.getRootProject().file("app/src/main/java"))
+    if(file == null || !isJniDir(file)){
+        return
+    }
+
+    FileFilter fileFilter = new FileFilter() {
+        @Override
+        boolean accept(File pathname) {
+            return pathname.isFile() && pathname.getName().endsWith(".java")
+        }
+    }
+
+    file.listFiles(fileFilter).each { File jniFile ->
+        ant.loadfile(srcFile: jniFile,property: jniFile.name)
+        println "${ant.properties[jniFile.name]}"
+    }
+}
