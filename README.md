@@ -2,3 +2,5 @@
 java to native
 
 自动查找java中的native方法，动态生成c代码
+
+自娱自乐阶段
